@@ -219,7 +219,7 @@ export default function GalleryPage() {
                   ) : null}
 
                   <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
-                    {isSubmitting ? "Publishing..." : "Submit Post"}
+                    {isSubmitting ? "Uploading..." : "Submit Post"}
                   </Button>
                 </form>
               </DialogContent>
