@@ -3,15 +3,15 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyADomHZJDb65a3KXOZUl4Cc2dtNb-fp17o",
-  authDomain: "stewardship-hub-a214e.firebaseapp.com",
-  projectId: "stewardship-hub-a214e",
-  storageBucket: "stewardship-hub-a214e.appspot.com",
-  messagingSenderId: "141018488161",
-  appId: "1:141018488161:web:e7faa611c9befafa0c7920"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
-export const storage = getStorage(app);
+export const storage = getStorage(app, `gs://${firebaseConfig.storageBucket}`);

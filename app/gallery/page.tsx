@@ -143,8 +143,9 @@ export default function GalleryPage() {
       setFormValues(initialFormValues);
       setFile(null);
       setIsDialogOpen(false);
-    } catch {
-      setFormError("Failed to publish post. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown upload error";
+      setFormError(`Failed to publish post: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
