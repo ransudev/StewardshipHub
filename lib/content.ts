@@ -1,11 +1,9 @@
 export type GalleryPost = {
-  id: number;
+  id: string;
   image: string;
   title: string;
   description: string;
 };
-
-export const INITIAL_GALLERY_POSTS: GalleryPost[] = [];
 
 export const ECO_FACTS: string[] = [
   "Recycling one aluminum can saves enough energy to run a TV for about three hours.",

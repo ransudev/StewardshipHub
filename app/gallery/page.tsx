@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ImagePlus } from "lucide-react";
 import Card from "@/components/Card";
 import { Button } from "@/components/ui/button";
@@ -16,55 +16,138 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { INITIAL_GALLERY_POSTS, type GalleryPost } from "@/lib/content";
+import { fetchPosts, savePost, subscribeToPosts, type GalleryPostData, type GalleryPostDocument } from "@/lib/posts";
+import { uploadImage } from "@/lib/upload";
 
 type FormValues = {
-  image: string;
   title: string;
   description: string;
 };
 
 const initialFormValues: FormValues = {
-  image: "",
   title: "",
   description: ""
 };
 
 export default function GalleryPage() {
-  const [posts, setPosts] = useState<GalleryPost[]>(INITIAL_GALLERY_POSTS);
+  const [posts, setPosts] = useState<GalleryPostDocument[]>([]);
   const [formValues, setFormValues] = useState<FormValues>(initialFormValues);
+  const [file, setFile] = useState<File | null>(null);
   const [formError, setFormError] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
 
   const updateFormValue = (field: keyof FormValues, value: string) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  useEffect(() => {
+    let isMounted = true;
 
-    const trimmedValues: FormValues = {
-      image: formValues.image.trim(),
-      title: formValues.title.trim(),
-      description: formValues.description.trim()
+    const loadInitialPosts = async () => {
+      try {
+        const fetchedPosts = await fetchPosts();
+        if (isMounted) {
+          setPosts(fetchedPosts);
+        }
+      } catch {
+        if (isMounted) {
+          setFormError("Unable to load posts right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingPosts(false);
+        }
+      }
     };
 
-    if (!trimmedValues.image || !trimmedValues.title || !trimmedValues.description) {
-      setFormError("Please fill in all fields before adding a post.");
+    loadInitialPosts();
+
+    const unsubscribe = subscribeToPosts(
+      (livePosts: GalleryPostDocument[]) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setPosts(livePosts);
+        setIsLoadingPosts(false);
+      },
+      () => {
+        if (isMounted) {
+          setFormError("Unable to sync posts in real time.");
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0] ?? null;
+
+    if (!selectedFile) {
+      setFile(null);
       return;
     }
 
-    const newPost: GalleryPost = {
-      id: Date.now(),
-      image: trimmedValues.image,
-      title: trimmedValues.title,
-      description: trimmedValues.description
-    };
+    if (!selectedFile.type.startsWith("image/")) {
+      setFormError("Please select a valid image file.");
+      setFile(null);
+      return;
+    }
 
-    setPosts((prev) => [newPost, ...prev]);
-    setFormValues(initialFormValues);
     setFormError("");
-    setIsDialogOpen(false);
+    setFile(selectedFile);
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedTitle = formValues.title.trim();
+    const trimmedDescription = formValues.description.trim();
+
+    if (!file) {
+      setFormError("Please upload an image file.");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setFormError("Only image files are allowed.");
+      return;
+    }
+
+    if (!trimmedTitle || !trimmedDescription) {
+      setFormError("Please fill in title and description.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError("");
+
+    try {
+      const imageUrl = await uploadImage(file);
+
+      const postPayload: GalleryPostData = {
+        image: imageUrl,
+        title: trimmedTitle,
+        description: trimmedDescription,
+        createdAt: Date.now()
+      };
+
+      await savePost(postPayload);
+
+      setFormValues(initialFormValues);
+      setFile(null);
+      setIsDialogOpen(false);
+    } catch {
+      setFormError("Failed to publish post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -97,13 +180,13 @@ export default function GalleryPage() {
 
                 <form onSubmit={handleSubmit} className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="image">Image URL</Label>
-                    <Input
+                    <Label htmlFor="image">Image File</Label>
+                    <input
                       id="image"
-                      type="url"
-                      placeholder="https://images.unsplash.com/..."
-                      value={formValues.image}
-                      onChange={(event) => updateFormValue("image", event.target.value)}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full rounded-lg border border-[var(--input)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--foreground)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--primary)] file:px-3 file:py-1 file:text-[var(--primary-foreground)]"
                     />
                   </div>
 
@@ -134,8 +217,8 @@ export default function GalleryPage() {
                     </p>
                   ) : null}
 
-                  <Button type="submit" className="w-full sm:w-fit">
-                    Submit Post
+                  <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
+                    {isSubmitting ? "Publishing..." : "Submit Post"}
                   </Button>
                 </form>
               </DialogContent>
@@ -145,7 +228,11 @@ export default function GalleryPage() {
       </UiCard>
 
       <div className="mx-auto max-w-2xl space-y-6">
-        {posts.length === 0 ? (
+        {isLoadingPosts ? (
+          <UiCard className="border-[var(--border)] shadow-[0_12px_26px_rgba(10,20,12,0.35)]">
+            <CardContent className="p-6 text-center text-[var(--muted-foreground)]">Loading posts...</CardContent>
+          </UiCard>
+        ) : posts.length === 0 ? (
           <UiCard className="border-[var(--border)] shadow-[0_12px_26px_rgba(10,20,12,0.35)]">
             <CardContent className="p-6 text-center text-[var(--muted-foreground)]">
               No posts yet. Be the first to share!
