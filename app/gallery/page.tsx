@@ -1,8 +1,8 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ImagePlus } from "lucide-react";
-import Card from "@/components/Card";
+import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
+import { ExternalLink, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card as UiCard, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,14 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { fetchPosts, savePost, subscribeToPosts, type GalleryPostData, type GalleryPostDocument } from "@/lib/posts";
-import { uploadImage } from "@/lib/upload";
 
 type FormValues = {
+  imageUrl: string;
   title: string;
   description: string;
 };
 
 const initialFormValues: FormValues = {
+  imageUrl: "",
   title: "",
   description: ""
 };
@@ -32,14 +33,17 @@ const initialFormValues: FormValues = {
 export default function GalleryPage() {
   const [posts, setPosts] = useState<GalleryPostDocument[]>([]);
   const [formValues, setFormValues] = useState<FormValues>(initialFormValues);
-  const [file, setFile] = useState<File | null>(null);
   const [formError, setFormError] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
+  const [previewError, setPreviewError] = useState<boolean>(false);
 
   const updateFormValue = (field: keyof FormValues, value: string) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
+    if (field === "imageUrl") {
+      setPreviewError(false);
+    }
   };
 
   useEffect(() => {
@@ -86,37 +90,15 @@ export default function GalleryPage() {
     };
   }, []);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0] ?? null;
-
-    if (!selectedFile) {
-      setFile(null);
-      return;
-    }
-
-    if (!selectedFile.type.startsWith("image/")) {
-      setFormError("Please select a valid image file.");
-      setFile(null);
-      return;
-    }
-
-    setFormError("");
-    setFile(selectedFile);
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const trimmedImageUrl = formValues.imageUrl.trim();
     const trimmedTitle = formValues.title.trim();
     const trimmedDescription = formValues.description.trim();
 
-    if (!file) {
-      setFormError("Please upload an image file.");
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setFormError("Only image files are allowed.");
+    if (!trimmedImageUrl || !trimmedImageUrl.startsWith("http")) {
+      setFormError("Please enter a valid image URL that starts with http.");
       return;
     }
 
@@ -129,10 +111,8 @@ export default function GalleryPage() {
     setFormError("");
 
     try {
-      const imageUrl = await uploadImage(file);
-
       const postPayload: GalleryPostData = {
-        image: imageUrl,
+        image: trimmedImageUrl,
         title: trimmedTitle,
         description: trimmedDescription,
         createdAt: Date.now()
@@ -141,10 +121,10 @@ export default function GalleryPage() {
       await savePost(postPayload);
 
       setFormValues(initialFormValues);
-      setFile(null);
+      setPreviewError(false);
       setIsDialogOpen(false);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown upload error";
+      const message = error instanceof Error ? error.message : "Unknown post error";
       setFormError(`Failed to publish post: ${message}`);
     } finally {
       setIsSubmitting(false);
@@ -179,17 +159,48 @@ export default function GalleryPage() {
                   </DialogDescription>
                 </DialogHeader>
 
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--secondary)] p-4 text-sm text-[var(--muted-foreground)]">
+                  <p className="font-semibold text-[var(--foreground)]">How to add an image using ImgBB</p>
+                  <ol className="mt-2 space-y-1">
+                    <li>Step 1: Click the button below to open ImgBB</li>
+                    <li>Step 2: Upload your image there</li>
+                    <li>Step 3: Copy the "Direct Link"</li>
+                    <li>Step 4: Paste the link here</li>
+                  </ol>
+                  <Button asChild variant="outline" className="mt-3">
+                    <a href="https://imgbb.com/" target="_blank" rel="noreferrer">
+                      Upload Image (ImgBB)
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+
                 <form onSubmit={handleSubmit} className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="image">Image File</Label>
-                    <input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="w-full rounded-lg border border-[var(--input)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--foreground)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--primary)] file:px-3 file:py-1 file:text-[var(--primary-foreground)]"
+                    <Label htmlFor="imageUrl">Image URL</Label>
+                    <Input
+                      id="imageUrl"
+                      type="text"
+                      placeholder="https://i.ibb.co/xxxx/image.jpg"
+                      value={formValues.imageUrl}
+                      onChange={(event) => updateFormValue("imageUrl", event.target.value)}
                     />
                   </div>
+
+                  {formValues.imageUrl.trim().startsWith("http") ? (
+                    <div className="overflow-hidden rounded-xl border border-[var(--border)]">
+                      <img
+                        src={formValues.imageUrl}
+                        alt="Image preview"
+                        onError={() => setPreviewError(true)}
+                        onLoad={() => setPreviewError(false)}
+                        className="h-44 w-full object-cover"
+                      />
+                      {previewError ? (
+                        <p className="p-3 text-sm text-[var(--destructive)]">Preview failed to load. Check your image URL.</p>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   <div className="grid gap-2">
                     <Label htmlFor="title">Title</Label>
@@ -219,7 +230,7 @@ export default function GalleryPage() {
                   ) : null}
 
                   <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
-                    {isSubmitting ? "Uploading..." : "Submit Post"}
+                    {isSubmitting ? "Publishing..." : "Submit Post"}
                   </Button>
                 </form>
               </DialogContent>
@@ -241,9 +252,20 @@ export default function GalleryPage() {
           </UiCard>
         ) : (
           posts.map((post) => (
-            <div key={post.id} className="transition-all duration-300 hover:-translate-y-0.5">
-              <Card image={post.image} title={post.title} description={post.description} />
-            </div>
+            <UiCard
+              key={post.id}
+              className="overflow-hidden border-[var(--border)] shadow-[0_10px_24px_rgba(10,20,12,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(76,175,80,0.3)]"
+            >
+              <div className="relative h-64 w-full">
+                <Image src={post.image} alt={post.title} fill className="rounded-xl object-cover" sizes="100vw" />
+              </div>
+              <CardHeader>
+                <CardTitle className="text-2xl">{post.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[var(--muted-foreground)]">{post.description}</p>
+              </CardContent>
+            </UiCard>
           ))
         )}
       </div>
