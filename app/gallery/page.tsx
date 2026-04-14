@@ -1,7 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Clipboard, Download, Edit3, ImagePlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card as UiCard, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,8 +38,7 @@ const initialFormValues: FormValues = {
 };
 
 export default function GalleryPage() {
-  const searchParams = useSearchParams();
-  const isAdminPanel = searchParams.get(ADMIN_QUERY_KEY) === ADMIN_QUERY_VALUE;
+  const [isAdminPanel, setIsAdminPanel] = useState<boolean>(false);
 
   const [posts, setPosts] = useState<GalleryPost[]>(postsData as GalleryPost[]);
   const [formValues, setFormValues] = useState<FormValues>(initialFormValues);
@@ -55,6 +53,20 @@ export default function GalleryPage() {
   const [copied, setCopied] = useState<boolean>(false);
 
   const exportJson = JSON.stringify(posts, null, 2);
+
+  useEffect(() => {
+    const updateAdminMode = () => {
+      const params = new URLSearchParams(window.location.search);
+      setIsAdminPanel(params.get(ADMIN_QUERY_KEY) === ADMIN_QUERY_VALUE);
+    };
+
+    updateAdminMode();
+    window.addEventListener("popstate", updateAdminMode);
+
+    return () => {
+      window.removeEventListener("popstate", updateAdminMode);
+    };
+  }, []);
 
   const resetForm = () => {
     setFormValues(initialFormValues);
