@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { Clipboard, Download, Edit3, ImagePlus, Trash2 } from "lucide-react";
+import { Clipboard, Download, Edit3, ExternalLink, ImagePlus, ListChecks, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card as UiCard, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -37,6 +37,13 @@ const initialFormValues: FormValues = {
   description: ""
 };
 
+const submissionSteps = [
+  "Click the button below to open the submission form",
+  "Fill in your title and description",
+  "Upload your image",
+  "Submit your entry"
+];
+
 export default function GalleryPage() {
   const [isAdminPanel, setIsAdminPanel] = useState<boolean>(false);
 
@@ -50,6 +57,7 @@ export default function GalleryPage() {
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
+  const [isSubmissionInfoOpen, setIsSubmissionInfoOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const exportJson = JSON.stringify(posts, null, 2);
@@ -276,7 +284,42 @@ export default function GalleryPage() {
                   </DialogContent>
                 </Dialog>
               </div>
-            ) : null}
+            ) : (
+              <Dialog open={isSubmissionInfoOpen} onOpenChange={setIsSubmissionInfoOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <ListChecks className="mr-2 h-4 w-4" />
+                    Add Post
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Submit Your Post</DialogTitle>
+                    <DialogDescription>
+                      Share your environmental action by submitting through our form.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-2 rounded-lg border border-[var(--border)] bg-[var(--secondary)] p-4 text-sm text-[var(--foreground)]">
+                    {submissionSteps.map((step, index) => (
+                      <p key={step}>
+                        <span className="font-semibold text-[var(--primary)]">{index + 1}.</span> {step}
+                      </p>
+                    ))}
+                    <p className="pt-2 text-xs text-[var(--muted-foreground)]">
+                      All submissions are reviewed before being added to the gallery.
+                    </p>
+                  </div>
+
+                  <Button asChild className="w-full sm:w-fit">
+                    <a href="https://forms.gle/ufUKvowEh8dwcL947" target="_blank" rel="noreferrer">
+                      Open Submission Form
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </CardHeader>
       </UiCard>
