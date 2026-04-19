@@ -51,12 +51,12 @@ export type StewardshipTopic = {
   lead: string;             // first paragraph — the hook, the alarming truth
   body: string;             // second paragraph — deeper context
   stats: TopicStat[];       // exactly 2 stat boxes
-  actions: string[];        // 3 bullet points: what the reader can do
+  actions: string[];  
+  sources: string[];      // 3 bullet points: what the reader can do
 };
 
 // ── Topic data ────────────────────────────────
-// ✏️  EDIT YOUR TOPICS HERE.
-// Each object between { } is one topic card.
+
 
 export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
   {
@@ -66,19 +66,22 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
     category: "Ocean health",
     categoryColor: "blue",
 
-    // ✏️ Edit the text below freely
     title: "Plastic & ocean pollution",
     lead: "8 million metric tons of plastic enter our oceans every year. At current rates, oceans will contain more plastic than fish by weight by 2050.",
-    body: "Plastic breaks into microplastics that enter the food chain — now found in fish, drinking water, and even human blood. This is largely driven by single-use packaging and poor waste infrastructure, making it a solvable problem if demand and policy shift together.",
+    body: `Plastic pollution is the accumulation of synthetic plastic products in the environment that adversely affects wildlife, habitats, and human populations.
+     Because plastics are inexpensive, durable, and highly versatile, their production has skyrocketed over the past century. However, their chemical structure renders 
+     them highly resistant to natural degradation, leading to a massive global environmental crisis as billions of tons of plastic waste accumulate in landfills, 
+     terrestrial ecosystems, and the world's oceans.`,
     stats: [
       { number: "8M",   label: "tons of plastic enter oceans each year" },
       { number: "2050", label: "projected year plastic outweighs fish" },
     ],
     actions: [
       "Switch to reusable bags, bottles, and containers in your daily routine.",
-      "Refuse single-use straws and cutlery when eating out or ordering in.",
+      `Refuse single-use straws and cutlery when eating out or ordering in.`,
       "Join or organise a local beach, river, or community cleanup drive.",
     ],
+    sources: ["https://www.unep.org/plastic-pollution", "https://www.britannica.com/science/plastic-pollution", "https://www.nationalgeographic.com/environment/article/plastic-pollution"]
   },
 
   {
@@ -100,6 +103,7 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
       "Plant native trees locally and support certified reforestation programmes.",
       "Choose products with FSC (timber) or RSPO (palm oil) certification.",
     ],
+    sources: ["https://education.nationalgeographic.org/resource/deforestation/", "https://education.nationalgeographic.org/resource/deforestation/", "https://www.philchm.ph/deforestation/"]
   },
 
   {
@@ -110,17 +114,21 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
     categoryColor: "amber",
 
     title: "Carbon emissions & global warming",
-    lead: "Global average temperatures are already 1.1 °C above pre-industrial levels. The internationally agreed safe limit is 1.5 °C — and at current emissions rates, we will breach it within the decade.",
-    body: "Transport, food systems, and home energy use make up the largest parts of a household carbon footprint. While individual action matters, the most powerful lever is collective pressure on industries and governments to accelerate the transition away from fossil fuels.",
+      lead: `Climate change refers to the long-term alteration of Earth’s temperature and typical weather patterns. Global 
+              average temperatures are already 1.1 °C above pre-industrial levels in the lower atmospheric surfaces `,
+    body: `Transport, food systems, and home energy use make up the largest parts of a household carbon footprint. While individual 
+            action matters, the most powerful lever is collective pressure on industries and 
+            governments to accelerate the transition away from fossil fuels.`,
     stats: [
-      { number: "1.1°C", label: "warming already locked in today" },
-      { number: "1.5°C", label: "Paris Agreement safe limit" },
+      { number: "1.1°C", label: "increase in temperature globally" },
+      { number: "40%", label: "Increase in Carbon Dioxide in the air since the 1700's" },
     ],
     actions: [
-      "Fly less — a single return long-haul flight can equal months of car emissions.",
-      "Switch your home to a renewable energy tariff or install solar panels.",
-      "Eat less red meat; shifting to plant-based meals reduces your footprint significantly.",
+      "Sharing rides during commutes through Jeepneys and Buses",
+      "Practice Conserving energy practices in simple day to day activities",
+      "Start transitioning to obtaining power through more sustainable energy sources - solar.",
     ],
+    sources: ["https://www.epa.gov/sites/default/files/2016-09/documents/climate-change-gu.pdf", "https://doi.org/10.1146/annurev-soc-121919-054614", " https://www.ipcc.ch/site/assets/uploads/2018/03/ar4-wg2-spm.pdf"]
   },
 
   {
@@ -142,6 +150,7 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
       "Collect rainwater for watering plants and cleaning outdoor spaces.",
       "Choose water-efficient appliances (look for WELS or equivalent ratings).",
     ],
+    sources: ["https://doi.org/10.3390/w7030975", "https://doi.org/10.1002/2016EF000518", "https://doi.org/10.1016/j.agwat.2005.07.001"]
   },
 
   {
@@ -163,6 +172,7 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
       "Compost food scraps instead of sending them to landfill.",
       "Understand 'best before' vs 'use by' — most food is safe past the best before date.",
     ],
+    sources: ["https://www.researchgate.net/publication/392074424_Pollinator_Decline_and_Conservation_Strategies_A_Global_Perspective", "https://www.pollinator.org/threats", "https://www.cabidigitallibrary.org/doi/10.1079/cabireviews.2024.0016"]
   },
 
   {
@@ -184,6 +194,7 @@ export const STEWARDSHIP_TOPICS: StewardshipTopic[] = [
       "Avoid pesticides — use natural alternatives like neem oil or companion planting.",
       "Leave parts of your garden 'wild' — long grass and leaf piles are vital habitat.",
     ],
+    sources: ["https://www.unep.org/plastic-pollution", "https://www.britannica.com/science/plastic-pollution", "https://www.epa.gov/plastics/impacts-plastic-pollution"]
   },
 ];
 

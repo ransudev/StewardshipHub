@@ -4,10 +4,7 @@
 import { useState } from "react";
 import { STEWARDSHIP_TOPICS, type StewardshipTopic } from "@/lib/content";
 
-// ── Colour map ────────────────────────────────
-// Maps the categoryColor string in content.ts
-// to actual Tailwind/CSS classes used in the UI.
-// If you add a new categoryColor, add it here too.
+
 const CATEGORY_COLORS: Record<string, { badge: string; stat: string; dot: string }> = {
   blue:  { badge: "bg-blue-900/40 text-blue-300",   stat: "bg-blue-900/20",  dot: "bg-blue-400" },
   green: { badge: "bg-green-900/40 text-green-300",  stat: "bg-green-900/20", dot: "bg-green-400" },
@@ -16,9 +13,7 @@ const CATEGORY_COLORS: Record<string, { badge: string; stat: string; dot: string
   red:   { badge: "bg-red-900/40 text-red-300",      stat: "bg-red-900/20",   dot: "bg-red-400" },
 };
 
-// ── Detail panel ──────────────────────────────
-// Renders the right-hand content for the selected topic.
-// You shouldn't need to edit this — edit content.ts instead.
+
 function DetailPanel({ topic }: { topic: StewardshipTopic }) {
   const colors = CATEGORY_COLORS[topic.categoryColor] ?? CATEGORY_COLORS.blue;
 
@@ -30,18 +25,18 @@ function DetailPanel({ topic }: { topic: StewardshipTopic }) {
         {topic.category}
       </span>
 
-      {/* ✏️ title comes from topic.title in content.ts */}
+      {/*  title comes from topic.title in content.ts */}
       <h1 className="mb-3 font-serif text-2xl font-bold text-[var(--foreground)] md:text-3xl">
         {topic.title}
       </h1>
 
-      {/* ✏️ lead paragraph — the alarming opener */}
+      {/*  lead paragraph — the alarming opener */}
       <p className="mb-5 text-base leading-relaxed text-[var(--muted-foreground)] md:text-lg">
         {topic.lead}
       </p>
 
       {/* ── Stat boxes ── */}
-      {/* ✏️ numbers and labels come from topic.stats in content.ts */}
+      {/* numbers and labels come from topic.stats in content.ts */}
       <div className="mb-6 grid grid-cols-2 gap-3">
         {topic.stats.map((stat) => (
           <div
@@ -54,17 +49,17 @@ function DetailPanel({ topic }: { topic: StewardshipTopic }) {
         ))}
       </div>
 
-      {/* ✏️ body paragraph — deeper context */}
+      {/*  body paragraph — deeper context */}
       <p className="mb-6 text-sm leading-relaxed text-[var(--muted-foreground)]">
         {topic.body}
       </p>
 
-      {/* ── What you can do ── */}
-      <div>
+      {/* What you can do  */}
+      <div className="mb-6">
         <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
           What you can do
         </p>
-        {/* ✏️ action items come from topic.actions in content.ts */}
+        {/*  action items found in actions in content.ts */}
         <ul className="space-y-3">
           {topic.actions.map((action) => (
             <li key={action} className="flex items-start gap-3 text-sm text-[var(--foreground)]">
@@ -74,11 +69,27 @@ function DetailPanel({ topic }: { topic: StewardshipTopic }) {
           ))}
         </ul>
       </div>
+
+      {/* Sources */}
+      {topic.sources && topic.sources.length > 0 && (
+        <div className="border-t border-[var(--border)] pt-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">
+            Sources
+          </p>
+          <ul className="space-y-2">
+            {topic.sources.map((source) => (
+              <li key={source} className="text-xs text-[var(--muted-foreground)]">
+                {source}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Main page ─────────────────────────────────
+// Main page 
 export default function FactsPage() {
 
   const [activeIndex, setActiveIndex] = useState(0);
